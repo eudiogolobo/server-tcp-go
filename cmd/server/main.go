@@ -21,6 +21,9 @@ import (
 	"github.com/panjf2000/ants"
 	"servidor-tcp-go/config"
 	"servidor-tcp-go/pkg/database"
+
+    "github.com/joho/godotenv"
+
 )
 
 type CommandData struct {
@@ -72,11 +75,35 @@ var (
 )
 
 func main() {
+	var err error
+
+    // Carregar as variáveis de ambiente do arquivo .env
+	err = godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Erro ao carregar arquivo .env: %v", err)
+	}
+
+    // Acessando variáveis de ambiente
+	redisHost := os.Getenv("REDIS_HOST")
+	if redisHost == "" {
+		// Valor padrão caso a variável de ambiente não esteja definida
+		redisHost = "127.0.0.1"
+	}
+
+	redisPort := os.Getenv("REDIS_PORT")
+	if redisPort == "" {
+		redisPort = "6379"
+	}
+
+    serverPort := os.Getenv("SERVER_PORT")
+	if serverPort == "" {
+		serverPort = "8082"
+	}
+
 	// Inicializa o Redis
-	rdb = NewRedisQueue("127.0.0.1:6379", "", 0)
+	rdb = NewRedisQueue(redisHost+":"+redisPort, "", 0)
 
 	// Inicializa o pool de workers (Tamanho do pool ajustável)
-	var err error
 	workerPool, err = ants.NewPool(100) // Número de workers no pool
 	if err != nil {
 		log.Fatalf("Erro ao criar pool de workers: %v", err)
@@ -95,7 +122,7 @@ func main() {
 	signal.Notify(shutdownSignal, syscall.SIGINT, syscall.SIGTERM)
 
 	// Inicia o servidor TCP e o listener de comandos
-	go startTCPServer(db)
+	go startTCPServer(serverPort, db)
 	go receiveCommands()
 
 	fmt.Println("Servidor TCP iniciado. Pressione Ctrl+C para parar.")
@@ -105,8 +132,9 @@ func main() {
 	fmt.Println("Desligamento completo. Servidor encerrado.")
 }
 
-func startTCPServer(db *sql.DB) {
-	listener, err := net.Listen("tcp", ":8082")
+func startTCPServer(serverPort string, db *sql.DB) {
+
+	listener, err := net.Listen("tcp", ":"+serverPort)
 	if err != nil {
 		log.Fatalf("Erro ao iniciar o servidor TCP: %v", err)
 	}
