@@ -168,13 +168,16 @@ func handleConnection(conn net.Conn, db *sql.DB) {
 
 	reader := bufio.NewReaderSize(conn, 4096)  // Aumenta o buffer para melhorar a performance
 
-	// Lê mensagem inicial
-	message, err := reader.ReadString('\n')
+    buffer := make([]byte, 4096)
+
+	// Processa a mensagem inicial
+	n, err := conn.Read(buffer)
 	if err != nil {
 		log.Printf("Erro ao ler a mensagem: %v", err)
 		return
 	}
-	message = strings.TrimSpace(message)
+
+	message := strings.TrimSpace(string(buffer[:n]))
 
     log.Printf("Mensagem recebida: %s", message)
 
@@ -216,7 +219,9 @@ func handleConnection(conn net.Conn, db *sql.DB) {
 		// A cada leitura de mensagem, se o tempo de inatividade for excedido, a conexão será fechada
 		conn.SetReadDeadline(time.Now().Add(180 * time.Minute)) // Ajuste o tempo limite a cada mensagem recebida
 
-		message, err := reader.ReadString('\n')
+		// Lê dados diretamente do buffer
+		n, err := conn.Read(buffer)
+
 		if err != nil {
 			log.Printf("Erro ao ler mensagem: %v", err)
 			close(quit)
@@ -224,7 +229,9 @@ func handleConnection(conn net.Conn, db *sql.DB) {
 			return
 		}
 
-		message = strings.TrimSpace(message)
+		message := strings.TrimSpace(string(buffer[:n]))
+        
+		log.Printf("Mensagem recebida: %s", message)
 
 		switch typeMessage(message) {
 		case 0:
