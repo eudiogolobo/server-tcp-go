@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -166,8 +165,6 @@ func handleConnection(conn net.Conn, db *sql.DB) {
 	// Defina o tempo limite de leitura inicial
 	conn.SetReadDeadline(time.Now().Add(3 * time.Minute)) // Tempo limite para 3 minutos de inatividade
 
-	reader := bufio.NewReaderSize(conn, 4096)  // Aumenta o buffer para melhorar a performance
-
     buffer := make([]byte, 4096)
 
 	// Processa a mensagem inicial
@@ -230,7 +227,7 @@ func handleConnection(conn net.Conn, db *sql.DB) {
 		}
 
 		message := strings.TrimSpace(string(buffer[:n]))
-        
+
 		log.Printf("Mensagem recebida: %s", message)
 
 		switch typeMessage(message) {
