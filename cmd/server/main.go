@@ -176,6 +176,8 @@ func handleConnection(conn net.Conn, db *sql.DB) {
 	}
 	message = strings.TrimSpace(message)
 
+    log.Printf("Mensagem recebida: %s", message)
+
 	// Valida formato da mensagem
 	parts := strings.Split(message, ";")
 	if len(parts) < 2 {
