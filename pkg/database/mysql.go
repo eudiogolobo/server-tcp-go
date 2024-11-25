@@ -13,7 +13,7 @@ func GetDeviceID(db *sql.DB, deviceID string) (int64, error) {
         return 0, fmt.Errorf("erro ao verificar conexão com o banco de dados: %v", err)
     }
 
-    query := "SELECT id FROM devices WHERE device_id = ? LIMIT 1"
+    query := "SELECT id FROM devices WHERE device_id = ? AND status = 1 LIMIT 1"
 
     // Executa a consulta e armazena o id encontrado
     var id int64
