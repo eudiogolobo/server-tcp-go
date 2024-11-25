@@ -140,7 +140,7 @@ func startTCPServer(serverPort string, db *sql.DB) {
 	}
 	defer listener.Close()
 
-	fmt.Println("Servidor TCP ouvindo na porta 8082...")
+	fmt.Println("Servidor TCP ouvindo na porta "+serverPort+"...")
 
 	for {
 		conn, err := listener.Accept()
